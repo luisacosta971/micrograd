@@ -1,4 +1,3 @@
-import graph_module as graph_module
 import math
 
 class Value:
@@ -9,9 +8,6 @@ class Value:
         self._backward = lambda: None
         self._prev = set(_children)
         self._op = _op
-        
-    def __repr__(self):
-        return f'Value({self.data})'
     
     def __add__(self, other):
         other = other if isinstance(other, Value) else Value(other)
@@ -23,6 +19,9 @@ class Value:
             
         out._backward = _backward
         return out
+    
+    def __radd__(self, other):
+        return self + other
     
     def __mul__(self, other):
         other = other if isinstance(other, Value) else Value(other)
@@ -51,11 +50,17 @@ class Value:
     def __truediv__(self, other):
         return self * other ** -1
     
+    def __rtruediv__(self, other):
+        return other * self ** -1
+    
     def __neg__(self):
         return self * -1
     
     def __sub__(self, other):
         return self + (-other)
+    
+    def __rsub__(self, other):
+        return other + (-self) 
     
     def tanh(self):
         x = self.data
@@ -93,14 +98,5 @@ class Value:
         for node in reversed(topo):
             node._backward()
         
-        
-
-    
-a = Value(2)
-b = Value(1)
-c = 2 * b
-o = c.tanh()
-o.backward()
-
-graph = graph_module.draw_dot(o)
-graph.render('output/graph', format='png', view=False)
+    def __repr__(self):
+        return f'Value(data={self.data}, grad={self.grad})'
